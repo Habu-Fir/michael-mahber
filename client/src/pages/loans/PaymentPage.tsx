@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -13,19 +13,19 @@ import {
     Smartphone,
     AlertCircle,
     Info,
-
     Upload
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { formatCurrency } from '../../lib/utils';
+import toast from 'react-hot-toast';
 
+
+// Payment schema with proper typing
 const paymentSchema = z.object({
     amount: z.number()
         .min(1, 'Payment amount must be at least 1 ETB')
         .max(1000000, 'Payment amount cannot exceed 1,000,000 ETB'),
-    paymentMethod: z.enum(['cash', 'bank', 'mobile'], {
-        required_error: 'Please select a payment method',
-    }),
+    paymentMethod: z.enum(['cash', 'bank', 'mobile'] as const),
     receiptUrl: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
     notes: z.string().max(500, 'Notes cannot exceed 500 characters').optional(),
 });
@@ -37,15 +37,13 @@ const PaymentPage = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
 
-    const { data: loan, isLoading } = useLoan(id!);
+    const { data: loan, isLoading, refetch } = useLoan(id!);
     const requestPayment = useRequestPayment();
 
-    const [, setSelectedMethod] = useState<string>('');
     const [currentInterest, setCurrentInterest] = useState(0);
-    const [, setDaysSinceDisbursement] = useState(0);
 
     // Calculate current interest
-    React.useEffect(() => {
+    useEffect(() => {
         if (loan && loan.status === 'active') {
             const dailyRate = (loan.interestRate / 100) / 30;
             const lastCalc = loan.lastInterestCalculation
@@ -56,11 +54,12 @@ const PaymentPage = () => {
 
             const now = new Date();
             const daysDiff = Math.floor((now.getTime() - lastCalc.getTime()) / (1000 * 60 * 60 * 24));
-            setDaysSinceDisbursement(daysDiff);
 
             if (daysDiff > 0) {
                 const newInterest = loan.remainingPrincipal * dailyRate * daysDiff;
                 setCurrentInterest(Math.round(newInterest * 100) / 100);
+            } else {
+                setCurrentInterest(0);
             }
         }
     }, [loan]);
@@ -113,7 +112,10 @@ const PaymentPage = () => {
     }
 
     // Verify ownership
-    if (loan.memberId?._id !== user?._id) {
+    const isOwner = user?._id && loan.memberId?._id &&
+        loan.memberId._id.toString() === user._id.toString();
+
+    if (!isOwner) {
         return (
             <div className="min-h-[60vh] flex items-center justify-center p-4">
                 <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md text-center">
@@ -158,13 +160,16 @@ const PaymentPage = () => {
                 id: id!,
                 data: {
                     amount: data.amount,
-                    paymentMethod: data.paymentMethod,
+                    paymentMethod: data.paymentMethod, // Now correctly typed
                     receiptUrl: data.receiptUrl || undefined,
                     notes: data.notes,
                 },
             });
-            // Navigate back to loan details
+
+            // Refetch and navigate back to loan details
+            await refetch();
             navigate(`/loans/${id}`);
+            toast.success('Payment request submitted successfully!');
         } catch (error) {
             // Error handled in hook
         }
@@ -221,14 +226,14 @@ const PaymentPage = () => {
                         <span className="text-2xl font-bold text-primary-800">{formatCurrency(totalDue)}</span>
                     </div>
                     <p className="text-xs text-primary-600 mt-2">
-                        Interest accrues daily at {(dailyRate * 100).toFixed(2)}% ({(loan.interestRate)}% monthly)
+                        Interest accrues daily at {(dailyRate * 100).toFixed(2)}% ({loan.interestRate}% monthly)
                     </p>
                 </div>
             </div>
 
             {/* Info Card */}
             <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
-                <Info className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                <Info className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
                 <p className="text-sm text-amber-800">
                     Your payment will be marked as pending until Super Admin reviews and approves it.
                     Interest will continue to accrue until approval.
@@ -237,7 +242,6 @@ const PaymentPage = () => {
 
             {/* Payment Form */}
             <form onSubmit={handleSubmit(onSubmit)} className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 space-y-6">
-
                 {/* Payment Amount */}
                 <div className="space-y-2">
                     <label className="block text-sm font-medium text-gray-700">
@@ -304,10 +308,7 @@ const PaymentPage = () => {
                     <div className="grid grid-cols-3 gap-3">
                         <button
                             type="button"
-                            onClick={() => {
-                                setValue('paymentMethod', 'cash');
-                                setSelectedMethod('cash');
-                            }}
+                            onClick={() => setValue('paymentMethod', 'cash')}
                             className={cn(
                                 "flex flex-col items-center gap-2 p-4 border rounded-xl transition-all",
                                 watchMethod === 'cash'
@@ -329,10 +330,7 @@ const PaymentPage = () => {
 
                         <button
                             type="button"
-                            onClick={() => {
-                                setValue('paymentMethod', 'bank');
-                                setSelectedMethod('bank');
-                            }}
+                            onClick={() => setValue('paymentMethod', 'bank')}
                             className={cn(
                                 "flex flex-col items-center gap-2 p-4 border rounded-xl transition-all",
                                 watchMethod === 'bank'
@@ -354,10 +352,7 @@ const PaymentPage = () => {
 
                         <button
                             type="button"
-                            onClick={() => {
-                                setValue('paymentMethod', 'mobile');
-                                setSelectedMethod('mobile');
-                            }}
+                            onClick={() => setValue('paymentMethod', 'mobile')}
                             className={cn(
                                 "flex flex-col items-center gap-2 p-4 border rounded-xl transition-all",
                                 watchMethod === 'mobile'

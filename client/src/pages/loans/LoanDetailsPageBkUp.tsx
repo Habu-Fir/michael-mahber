@@ -675,3 +675,9 @@
 // };
 
 // export default LoanDetailsPage;
+
+export const LoanDetailsPageBkUp = () => {
+    return (
+        <div>LoanDetailsPageBkUp</div>
+    )
+}
