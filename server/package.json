@@ -42,6 +42,6 @@
         "@types/fs-extra": "^11.0.0",
         "@types/uuid": "^9.0.0",
         "@types/express-validator": "^3.0.0",
-        "@types/sharp": "^0.33.0"
+        "@types/sharp": "^0.31.1"
     }
 }
