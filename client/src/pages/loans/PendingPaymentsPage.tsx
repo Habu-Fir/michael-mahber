@@ -1,5 +1,4 @@
-import  { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { usePendingPayments, useApprovePayment } from '../../hooks/useLoans';
 import {
     Clock,
@@ -7,7 +6,7 @@ import {
     Download,
     User,
     Calendar,
-    
+
     FileText,
     AlertCircle,
     Check,

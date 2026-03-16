@@ -40,9 +40,9 @@ const PaymentPage = () => {
     const { data: loan, isLoading } = useLoan(id!);
     const requestPayment = useRequestPayment();
 
-    const [selectedMethod, setSelectedMethod] = useState<string>('');
+    const [, setSelectedMethod] = useState<string>('');
     const [currentInterest, setCurrentInterest] = useState(0);
-    const [daysSinceDisbursement, setDaysSinceDisbursement] = useState(0);
+    const [, setDaysSinceDisbursement] = useState(0);
 
     // Calculate current interest
     React.useEffect(() => {
@@ -196,7 +196,7 @@ const PaymentPage = () => {
             </div>
 
             {/* Current Status Card */}
-            <div className="bg-gradient-to-r from-primary-50 to-primary-100 rounded-2xl p-6 border border-primary-200">
+            <div className="bg-linear-to-r from-primary-50 to-primary-100 rounded-2xl p-6 border border-primary-200">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div>
                         <p className="text-xs text-primary-700">Principal</p>
