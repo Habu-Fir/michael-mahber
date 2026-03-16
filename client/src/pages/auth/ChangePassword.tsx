@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -48,7 +48,7 @@ const ChangePassword = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center p-4">
+        <div className="min-h-screen bg-linear-to-br from-primary-50 to-primary-100 flex items-center justify-center p-4">
             <div className="w-full max-w-md animate-fade-in">
                 <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-6 sm:p-8 border border-white/20">
 
@@ -67,7 +67,7 @@ const ChangePassword = () => {
 
                     {/* Warning */}
                     <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex gap-3">
-                        <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                        <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
                         <p className="text-sm text-amber-800">
                             For security reasons, you must change your temporary password before accessing the system.
                         </p>

@@ -13,11 +13,11 @@ import {
     Smartphone,
     AlertCircle,
     Info,
-    CheckCircle,
+
     Upload
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import { formatCurrency, formatDate } from '../../lib/utils';
+import { formatCurrency } from '../../lib/utils';
 
 const paymentSchema = z.object({
     amount: z.number()

@@ -1,24 +1,21 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useLoans, useApproveLoan } from '../../hooks/useLoans';
 import {
     Clock,
     CheckCircle,
-    XCircle,
     Eye,
     User,
     Calendar,
-    TrendingUp,
     AlertCircle,
     Shield,
-    Users
 } from 'lucide-react';
 import { formatCurrency, formatDate } from '../../lib/utils';
 
 const PendingLoansPage = () => {
     const navigate = useNavigate();
-    const { user, isApprover, isSuperAdmin } = useAuth();
+    const { isApprover, isSuperAdmin } = useAuth();
     const approveLoan = useApproveLoan();
 
     // Fetch loans that are ready for approval

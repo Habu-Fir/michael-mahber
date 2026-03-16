@@ -11,8 +11,6 @@ import {
     Pie,
     Cell
 } from 'recharts';
-import { cn } from '../../lib/utils';
-
 interface LoanChartProps {
     data: Array<{ month: string; loans: number; contributions: number }>;
 }
@@ -102,7 +100,6 @@ export const LoanStatusPie: React.FC<LoanPieChartProps> = ({ data }) => {
         innerRadius,
         outerRadius,
         percent,
-        index
     }: any) => {
         const RADIAN = Math.PI / 180;
         const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
@@ -143,7 +140,7 @@ export const LoanStatusPie: React.FC<LoanPieChartProps> = ({ data }) => {
                             labelLine={false}
                             label={renderCustomizedLabel}
                         >
-                            {data.map((entry, index) => (
+                            {data.map((_entry, index) => (
                                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                             ))}
                         </Pie>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, User, Mail, Phone, MapPin, Shield, Eye, EyeOff } from 'lucide-react';
+import { X, User, Mail, Phone, MapPin, Shield,  } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { cn } from '../../lib/utils';
 
@@ -17,7 +17,6 @@ const CreateMemberModal: React.FC<CreateMemberModalProps> = ({
     isSubmitting
 }) => {
     const { isSuperAdmin } = useAuth();
-    const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
         email: '',

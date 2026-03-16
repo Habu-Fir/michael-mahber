@@ -1,7 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Clock, ArrowRight, Banknote } from 'lucide-react';
-import { cn } from '../../lib/utils';
+import { Clock, ArrowRight } from 'lucide-react';
 
 interface PendingPayment {
     id: string;

@@ -1,21 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import  { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePendingPayments, useApprovePayment } from '../../hooks/useLoans';
 import {
     Clock,
     CheckCircle,
-    XCircle,
     Download,
     User,
     Calendar,
-    DollarSign,
+    
     FileText,
     AlertCircle,
     Check,
     X,
     RefreshCw
 } from 'lucide-react';
-import { cn } from '../../lib/utils';
+
 import { formatCurrency, formatDateTime } from '../../lib/utils';
 import toast from 'react-hot-toast';
 
@@ -37,7 +36,7 @@ interface PendingPayment {
 }
 
 const PendingPaymentsPage = () => {
-    const navigate = useNavigate();
+    //const navigate = useNavigate();
     const { data: payments, isLoading, error, refetch, isFetching } = usePendingPayments();
     const approvePayment = useApprovePayment();
 
@@ -192,7 +191,7 @@ const PendingPaymentsPage = () => {
                             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                                 {/* Left - Member Info */}
                                 <div className="flex items-start gap-4">
-                                    <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                    <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center shrink-0">
                                         <User className="w-6 h-6 text-amber-600" />
                                     </div>
                                     <div>

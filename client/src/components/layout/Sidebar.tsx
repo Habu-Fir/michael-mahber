@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { navItems } from '../../constants/navigation';
@@ -106,7 +106,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                     {/* User info and logout */}
                     <div className="p-4 border-t border-gray-200">
                         <div className="flex items-center gap-3 mb-3">
-                            <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center text-white font-bold shadow-md">
+                            <div className="w-10 h-10 bg-linear-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center text-white font-bold shadow-md">
                                 {user?.name?.charAt(0).toUpperCase() || 'U'}
                             </div>
                             <div className="flex-1 min-w-0">

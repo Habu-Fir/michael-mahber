@@ -1,5 +1,5 @@
-import React from 'react';
-import { Shield, Clock, CheckCircle } from 'lucide-react';
+
+import {  Clock,  } from 'lucide-react';
 
 const ApproverDashboard = () => {
     return (

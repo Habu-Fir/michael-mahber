@@ -1,5 +1,5 @@
-import React from 'react';
-import { User, HandCoins, History } from 'lucide-react';
+
+import { HandCoins, History } from 'lucide-react';
 
 const MemberDashboard = () => {
     return (

@@ -1,25 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import  { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useLoan, useSignLoan, useApproveLoan, useDisburseLoan } from '../../hooks/useLoans';
 import {
     ArrowLeft,
     HandCoins,
-    Calendar,
-    User,
-    Shield,
+    
     Clock,
     CheckCircle,
     XCircle,
     TrendingUp,
     DollarSign,
-    Users,
-    FileText,
+   
     Download,
     ThumbsUp,
     Send,
     AlertCircle,
-    Eye,
+   
     BarChart,
     TrendingUp as TrendingIcon,
     RefreshCw
@@ -436,7 +433,7 @@ const LoanDetailsPage = () => {
 
                         {/* Daily Interest Accrual */}
                         {loan.status === 'active' && (
-                            <div className="mt-4 p-4 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl border border-amber-200">
+                            <div className="mt-4 p-4 bg-linear-to-r from-amber-50 to-yellow-50 rounded-xl border border-amber-200">
                                 <div className="flex items-center gap-2 mb-3">
                                     <TrendingIcon className="w-5 h-5 text-amber-600" />
                                     <h3 className="font-semibold text-amber-800">Daily Interest Accrual</h3>
@@ -538,7 +535,7 @@ const LoanDetailsPage = () => {
                         <h2 className="text-lg font-semibold text-gray-900 mb-4">Member Information</h2>
 
                         <div className="flex items-center gap-3 mb-4">
-                            <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center text-white font-bold">
+                            <div className="w-12 h-12 bg-linear-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center text-white font-bold">
                                 {loan.memberName?.charAt(0).toUpperCase() || 'U'}
                             </div>
                             <div>

@@ -5,8 +5,6 @@ import {
     Users,
     UserCircle,
     Settings,
-    LogOut,
-    Shield,
     Receipt,
     Clock,
 } from 'lucide-react';

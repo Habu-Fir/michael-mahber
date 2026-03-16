@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useUsers, useCreateUser, useToggleUserStatus, useDeleteUser, useResetPassword } from '../hooks/useUsers';
@@ -7,7 +7,6 @@ import {
     Users,
     UserPlus,
     Search,
-    Filter,
     MoreVertical,
     Edit,
     Trash2,
@@ -39,7 +38,7 @@ const Members = () => {
     const { isSuperAdmin, isAdmin } = useAuth();
 
     // Fetch users with filters
-    const { data, isLoading, refetch } = useUsers({
+    const { data, isLoading } = useUsers({
         search: searchTerm || undefined,
         role: roleFilter || undefined,
         isActive: statusFilter ? statusFilter === 'active' : undefined,

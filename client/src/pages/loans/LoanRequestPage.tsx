@@ -51,7 +51,7 @@ const purposeLabels = {
 };
 
 const LoanRequestPage = () => {
-    const [selectedPurpose, setSelectedPurpose] = useState<string>('');
+    const [, setSelectedPurpose] = useState<string>('');
     const navigate = useNavigate();
     const { user } = useAuth();
     const requestLoan = useRequestLoan();
@@ -114,7 +114,7 @@ const LoanRequestPage = () => {
             {/* Member Info Card */}
             <div className="bg-primary-50 border border-primary-200 rounded-2xl p-6">
                 <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center shrink-0">
                         <Shield className="w-6 h-6 text-primary-600" />
                     </div>
                     <div>
@@ -127,7 +127,7 @@ const LoanRequestPage = () => {
 
             {/* Info Card */}
             <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-start gap-3">
-                <Info className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                <Info className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
                 <div>
                     <p className="text-sm font-medium text-amber-800">Loan Terms</p>
                     <p className="text-xs text-amber-700 mt-1">
@@ -268,7 +268,7 @@ const LoanRequestPage = () => {
             {/* Warning for large amounts */}
             {watchPrincipal > 50000 && (
                 <div className="bg-red-50 border border-red-200 rounded-2xl p-4 flex items-start gap-3">
-                    <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                    <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
                     <div>
                         <p className="text-sm font-medium text-red-800">Large Loan Amount</p>
                         <p className="text-xs text-red-700 mt-1">
