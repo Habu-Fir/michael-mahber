@@ -88,33 +88,28 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-app.use(express.json());
+app.use('/api/*', (req, res) => {
+  res.status(404).json({ success: false, message: "API Route not found" });
+});
 app.use(express.urlencoded({ extended: true }));
 
 // IMPORTANT: Configure CORS for production
 const allowedOrigins = [
-  'http://localhost:5173',                    // Local development
-  process.env.CLIENT_URL,                       // Your Vercel frontend URL (set later)
-  'https://your-frontend.vercel.app'            // Replace with actual URL
-].filter(Boolean);
+  'http://localhost:5173',
+  'https://michael-mahber.vercel.app', // Your actual Vercel URL
+];
 
-// Simpler CORS configuration
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps, curl)
+    // Allow requests with no origin (like mobile apps)
     if (!origin) return callback(null, true);
-    
-    // In production, allow all origins (or configure as needed)
-    if (process.env.NODE_ENV === 'production') {
+
+    // Check if origin is allowed or is a Vercel preview branch
+    if (allowedOrigins.indexOf(origin) !== -1 || origin.endsWith('.vercel.app')) {
       return callback(null, true);
+    } else {
+      return callback(new Error('Not allowed by CORS'));
     }
-    
-    // In development, allow localhost
-    if (origin.includes('localhost')) {
-      return callback(null, true);
-    }
-    
-    callback(new Error('Not allowed by CORS'));
   },
   credentials: true
 }));
@@ -130,7 +125,7 @@ app.use('/api/dashboard', dashboardRoutes);
 if (process.env.NODE_ENV === 'production') {
   // Serve static files from the client build folder
   app.use(express.static(path.join(__dirname, '../../client/dist')));
-  
+
   // For any route not matching API, serve the React app
   app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../../client/dist/index.html'));
