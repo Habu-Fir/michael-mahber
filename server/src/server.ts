@@ -1,78 +1,9 @@
-// import express from 'express';
-// import dotenv from 'dotenv';
-// import cors from 'cors';
-// import connectDB from './config/database';
-// import contributionRoutes from './routes/contribution.routes';
-
-
-// // Import routes
-// import dashboardRoutes from './routes/dashboard.routes';
-// import authRoutes from './routes/auth.routes';
-// import userRoutes from './routes/user.routes';
-// import loanRoutes from './routes/loan.routes';
-// dotenv.config();
-// connectDB();
-
-// const app = express();
-// const PORT = process.env.PORT || 5000;
-
-// app.use(express.json());
-// app.use(express.urlencoded({ extended: true }));
-
-// app.use(cors({
-//   origin: process.env.CLIENT_URL || 'http://localhost:5173',
-//   credentials: true
-// }));
-
-// // Mount routes
-// app.use('/api/dashboard', dashboardRoutes);
-// app.use('/api/auth', authRoutes);
-// app.use('/api/users', userRoutes);
-// app.use('/api/contributions', contributionRoutes);  // ADD THIS
-// app.use('/api/loans', loanRoutes);
-
-// app.use(cors({
-//   origin: 'http://localhost:5173', // Your frontend URL
-//   credentials: true
-// }));
-
-// // Serve uploaded files statically
-// app.use('/uploads', express.static('uploads'));
-
-// app.get('/health', (req, res) => {
-//   res.status(200).json({
-//     success: true,
-//     message: 'Server is running',
-//     timestamp: new Date().toISOString()
-//   });
-// });
-
-
-// app.use((req, res) => {
-//   res.status(404).json({
-//     success: false,
-//     message: `Route ${req.originalUrl} not found`
-//   });
-// });
-
-// app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-//   console.error('Error:', err.stack);
-//   res.status(err.statusCode || 500).json({
-//     success: false,
-//     message: err.message || 'Internal Server Error'
-//   });
-// });
-
-// app.listen(PORT, () => {
-//   console.log(`\n🚀 Server running on port ${PORT}`);
-//   console.log(`🔑 Auth routes: http://localhost:${PORT}/api/auth\n`);
-// });
-
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import path from 'path';
 import connectDB from './config/database';
+
+// Import routes
 import authRoutes from './routes/auth.routes';
 import userRoutes from './routes/user.routes';
 import loanRoutes from './routes/loan.routes';
@@ -87,80 +18,61 @@ connectDB();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// 1. GLOBAL MIDDLEWARE
+// Place CORS at the very top
 app.use(cors({
-  origin: true, // This automatically allows whichever origin is requesting
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+    origin: [
+        'https://michael-mahber.vercel.app',
+        'http://localhost:5173'
+    ],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Middleware
-app.use('/api/*', (req, res) => {
-  res.status(404).json({ success: false, message: "API Route not found" });
-});
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// IMPORTANT: Configure CORS for production
-const allowedOrigins = [
-  'http://localhost:5173',
-  'https://michael-mahber.vercel.app', // Your actual Vercel URL
-];
+// 2. HEALTH CHECK (Verify server is alive)
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'OK', message: 'Server is running' });
+});
 
-// app.use(cors({
-//   origin: function (origin, callback) {
-//     // Allow requests with no origin (like mobile apps)
-//     if (!origin) return callback(null, true);
-
-//     // Check if origin is allowed or is a Vercel preview branch
-//     if (allowedOrigins.indexOf(origin) !== -1 || origin.endsWith('.vercel.app')) {
-//       return callback(null, true);
-//     } else {
-//       return callback(new Error('Not allowed by CORS'));
-//     }
-//   },
-//   credentials: true
-// }));
-
-// API Routes (MUST come before static files)
+// 3. API ROUTES
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/loans', loanRoutes);
 app.use('/api/contributions', contributionRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 
-// // IMPORTANT: Serve static files from the client build folder (for production)
-// if (process.env.NODE_ENV === 'production') {
-//   // Serve static files from the client build folder
-//   app.use(express.static(path.join(__dirname, '../../client/dist')));
-
-//   // For any route not matching API, serve the React app
-//   app.get('*', (req, res) => {
-//     res.sendFile(path.join(__dirname, '../../client/dist/index.html'));
-//   });
-// }
-// Replace that if (process.env.NODE_ENV === 'production') block with this:
-if (process.env.NODE_ENV === 'production') {
-  app.get('/', (req, res) => {
-    res.json({ message: "API is active and healthy" });
-  });
-}
-
-// Health check
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'OK', message: 'Server is running' });
+// 4. PRODUCTION LANDING PAGE
+// This replaces the "static file serving" that was causing crashes
+app.get('/', (req, res) => {
+    res.json({
+        message: "Michael Mahber API is active",
+        documentation: "Refer to project README for endpoint details"
+    });
 });
 
-// Error handler
+// 5. 404 CATCH-ALL (Must come AFTER routes)
+app.use('/api/*', (req, res) => {
+    res.status(404).json({
+        success: false,
+        message: `API Route ${req.originalUrl} not found`
+    });
+});
+
+// 6. GLOBAL ERROR HANDLER
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error(err.stack);
-  res.status(err.status || 500).json({
-    success: false,
-    message: err.message || 'Server Error'
-  });
+    console.error('Server Error:', err.stack);
+    res.status(err.status || 500).json({
+        success: false,
+        message: err.message || 'Internal Server Error'
+    });
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`🚀 Server running on port ${PORT}`);
 });
 
 export default app;
