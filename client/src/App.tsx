@@ -7,11 +7,11 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import DashboardRouter from './components/dashboard/DashboardRouter';
 import Members from './pages/Members';
 import LoansPage from './pages/loans/LoansPage';
-import LoanDetailsPage from './pages/loans/LoanDetailsPageBkUp';
 import LoanRequestPage from './pages/loans/LoanRequestPage';
 import PaymentPage from './pages/loans/PaymentPage';
 import PendingPaymentsPage from './pages/loans/PendingPaymentsPage';
 import PendingLoansPage from './pages/loans/PendingLoansPage';
+import LoanDetailsPage from './pages/loans/LoanDetailsPage';
 // import PendingPaymentsPage from './pages/loans/PendingPaymentsPage';
 
 function App() {
