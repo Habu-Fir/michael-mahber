@@ -1,9 +1,290 @@
+
+import { Request, Response, NextFunction } from 'express';
+import { validationResult } from 'express-validator';
+import User from '../models/User';
+import { generateToken } from '../utils/generateToken';
+import asyncHandler from '../utils/asyncHandler';
+
+interface AuthRequest extends Request {
+  user?: any;
+}
+
+/**
+ * 🔑 Login Controller
+ */
+export const login = asyncHandler(async (req: Request, res: Response) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ success: false, errors: errors.array() });
+  }
+
+  const { email, password } = req.body;
+
+  // Find user and include password (which is likely hidden in schema)
+  const user = await User.findOne({ email }).select('+password');
+
+  if (!user) {
+    return res.status(401).json({ success: false, message: 'Invalid credentials' });
+  }
+
+  if (!user.isActive) {
+    return res.status(401).json({
+      success: false,
+      message: 'Your account has been deactivated. Please contact administrator.'
+    });
+  }
+
+  // Verify password using Bcrypt
+  const isPasswordMatch = await user.comparePassword(password);
+
+  if (!isPasswordMatch) {
+    return res.status(401).json({ success: false, message: 'Invalid credentials' });
+  }
+
+  const isFirstLogin = user.isFirstLogin;
+  user.lastLogin = new Date();
+  await user.save();
+
+  const token = generateToken(user._id.toString());
+
+  return res.status(200).json({
+    success: true,
+    token,
+    isFirstLogin,
+    user: {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      isFirstLogin: user.isFirstLogin
+    }
+  });
+});
+
+/**
+ * 🔐 Change Password
+ */
+export const changePassword = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const { currentPassword, newPassword } = req.body;
+  const user = await User.findById(req.user._id).select('+password');
+
+  if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+  const isMatch = await user.comparePassword(currentPassword);
+  if (!isMatch) return res.status(401).json({ success: false, message: 'Current password incorrect' });
+
+  user.password = newPassword;
+  user.isFirstLogin = false;
+  await user.save();
+
+  const token = generateToken(user._id.toString());
+  return res.status(200).json({ success: true, message: 'Password updated', token });
+});
+
+/**
+ * 👤 Get Current User
+ */
+export const getMe = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const user = await User.findById(req.user._id).select('-password');
+  return res.status(200).json({ success: true, data: user });
+});
+
+/**
+ * 🚪 Logout
+ */
+export const logout = asyncHandler(async (req: Request, res: Response) => {
+  return res.status(200).json({ success: true, message: 'Logged out successfully' });
+});
+
+
+// // import { Request, Response, NextFunction } from 'express';
+// // import { validationResult } from 'express-validator';
+// // import User from '../models/User';
+// // import { generateToken } from '../utils/generateToken';
+// // import asyncHandler from '../utils/asyncHandler';
+// // import ErrorResponse from '../utils/errorResponse';
+
+// // // Extend Request type to include user (set by auth middleware)
+// // interface AuthRequest extends Request {
+// //   user?: any;
+// // }
+
+// // /**
+// //  * =========================
+// //  * 🔑 Login Controller
+// //  * =========================
+// //  * @route   POST /api/auth/login
+// //  * @access  Public
+// //  */
+// // export const login = asyncHandler(async (
+// //   req: Request,
+// //   res: Response,
+// //   next: NextFunction
+// // ) => {
+// //   // Check validation errors
+// //   const errors = validationResult(req);
+// //   if (!errors.isEmpty()) {
+// //     return res.status(400).json({
+// //       success: false,
+// //       errors: errors.array()
+// //     });
+// //   }
+
+// //   const { email, password } = req.body;
+
+// //   // Find user by email (include password field)
+// //   const user = await User.findOne({ email }).select('+password');
+
+// //   // User not found
+// //   if (!user) {
+// //     return next(new ErrorResponse('Invalid credentials', 401));
+// //   }
+
+// //   // Check if account is active
+// //   if (!user.isActive) {
+// //     return next(new ErrorResponse(
+// //       'Your account has been deactivated. Please contact administrator.',
+// //       401
+// //     ));
+// //   }
+
+// //   // Verify password using our model method
+// //   const isPasswordMatch = await user.comparePassword(password);
+
+// //   if (!isPasswordMatch) {
+// //     return next(new ErrorResponse('Invalid credentials', 401));
+// //   }
+
+// //   // Check if this is first login (for redirecting to change password)
+// //   const isFirstLogin = user.isFirstLogin;
+
+// //   // Update last login
+// //   user.lastLogin = new Date();
+// //   await user.save();
+
+// //   // Generate token
+// //   const token = generateToken(user._id.toString());
+
+// //   res.status(200).json({
+// //     success: true,
+// //     token,
+// //     isFirstLogin,  // Send this flag to frontend
+// //     user: {
+// //       id: user._id,
+// //       name: user.name,
+// //       email: user.email,
+// //       role: user.role,
+// //       phone: user.phone,
+// //       address: user.address,
+// //       isFirstLogin: user.isFirstLogin,
+// //       profilePicture: user.profilePicture
+// //     }
+// //   });
+// // });
+
+// // /**
+// //  * =========================
+// //  * 🔐 Change Password
+// //  * =========================
+// //  * @route   POST /api/auth/change-password
+// //  * @access  Private
+// //  */
+// // export const changePassword = asyncHandler(async (
+// //   req: AuthRequest,
+// //   res: Response,
+// //   next: NextFunction
+// // ) => {
+// //   const { currentPassword, newPassword } = req.body;
+
+// //   // Validation
+// //   const errors = validationResult(req);
+// //   if (!errors.isEmpty()) {
+// //     return res.status(400).json({
+// //       success: false,
+// //       errors: errors.array()
+// //     });
+// //   }
+
+// //   // Get user with password field
+// //   const user = await User.findById(req.user._id).select('+password');
+
+// //   if (!user) {
+// //     return next(new ErrorResponse('User not found', 404));
+// //   }
+
+// //   // Verify current password
+// //   const isMatch = await user.comparePassword(currentPassword);
+// //   if (!isMatch) {
+// //     return next(new ErrorResponse('Current password is incorrect', 401));
+// //   }
+
+// //   // Ensure new password is different
+// //   if (currentPassword === newPassword) {
+// //     return next(new ErrorResponse('New password must be different from current password', 400));
+// //   }
+
+// //   // Update password
+// //   user.password = newPassword;  // Will be hashed by pre-save middleware
+// //   user.isFirstLogin = false;    // Mark that they've changed password
+// //   user.passwordChangedAt = new Date();
+
+// //   await user.save();
+
+// //   // Generate new token
+// //   const token = generateToken(user._id.toString());
+
+// //   res.status(200).json({
+// //     success: true,
+// //     message: 'Password changed successfully',
+// //     token  // Send new token
+// //   });
+// // });
+
+// // /**
+// //  * =========================
+// //  * 👤 Get Current User
+// //  * =========================
+// //  * @route   GET /api/auth/me
+// //  * @access  Private (requires token)
+// //  */
+// // export const getMe = asyncHandler(async (
+// //   req: AuthRequest,
+// //   res: Response,
+// //   next: NextFunction
+// // ) => {
+// //   // User is already attached by auth middleware
+// //   const user = await User.findById(req.user._id).select('-password');
+
+// //   res.status(200).json({
+// //     success: true,
+// //     data: user
+// //   });
+// // });
+
+// // /**
+// //  * =========================
+// //  * 🚪 Logout Controller
+// //  * =========================
+// //  * @route   GET /api/auth/logout
+// //  * @access  Private
+// //  */
+// // export const logout = asyncHandler(async (
+// //   req: Request,
+// //   res: Response,
+// //   next: NextFunction
+// // ) => {
+// //   // With JWT, server just acknowledges logout
+// //   // Client removes the token
+// //   res.status(200).json({
+// //     success: true,
+// //     message: 'Logged out successfully'
+// //   });
+// // });
 // import { Request, Response, NextFunction } from 'express';
 // import { validationResult } from 'express-validator';
 // import User from '../models/User';
 // import { generateToken } from '../utils/generateToken';
 // import asyncHandler from '../utils/asyncHandler';
-// import ErrorResponse from '../utils/errorResponse';
 
 // // Extend Request type to include user (set by auth middleware)
 // interface AuthRequest extends Request {
@@ -14,8 +295,6 @@
 //  * =========================
 //  * 🔑 Login Controller
 //  * =========================
-//  * @route   POST /api/auth/login
-//  * @access  Public
 //  */
 // export const login = asyncHandler(async (
 //   req: Request,
@@ -36,27 +315,33 @@
 //   // Find user by email (include password field)
 //   const user = await User.findOne({ email }).select('+password');
 
-//   // User not found
+//   // UPDATED: Direct response to prevent Middleware/CORS crashes
 //   if (!user) {
-//     return next(new ErrorResponse('Invalid credentials', 401));
+//     return res.status(401).json({
+//       success: false,
+//       message: 'Invalid credentials'
+//     });
 //   }
 
 //   // Check if account is active
 //   if (!user.isActive) {
-//     return next(new ErrorResponse(
-//       'Your account has been deactivated. Please contact administrator.',
-//       401
-//     ));
+//     return res.status(401).json({
+//       success: false,
+//       message: 'Your account has been deactivated. Please contact administrator.'
+//     });
 //   }
 
 //   // Verify password using our model method
 //   const isPasswordMatch = await user.comparePassword(password);
 
 //   if (!isPasswordMatch) {
-//     return next(new ErrorResponse('Invalid credentials', 401));
+//     return res.status(401).json({
+//       success: false,
+//       message: 'Invalid credentials'
+//     });
 //   }
 
-//   // Check if this is first login (for redirecting to change password)
+//   // Check if this is first login
 //   const isFirstLogin = user.isFirstLogin;
 
 //   // Update last login
@@ -66,10 +351,10 @@
 //   // Generate token
 //   const token = generateToken(user._id.toString());
 
-//   res.status(200).json({
+//   return res.status(200).json({
 //     success: true,
 //     token,
-//     isFirstLogin,  // Send this flag to frontend
+//     isFirstLogin,
 //     user: {
 //       id: user._id,
 //       name: user.name,
@@ -87,8 +372,6 @@
 //  * =========================
 //  * 🔐 Change Password
 //  * =========================
-//  * @route   POST /api/auth/change-password
-//  * @access  Private
 //  */
 // export const changePassword = asyncHandler(async (
 //   req: AuthRequest,
@@ -97,7 +380,6 @@
 // ) => {
 //   const { currentPassword, newPassword } = req.body;
 
-//   // Validation
 //   const errors = validationResult(req);
 //   if (!errors.isEmpty()) {
 //     return res.status(400).json({
@@ -106,38 +388,33 @@
 //     });
 //   }
 
-//   // Get user with password field
 //   const user = await User.findById(req.user._id).select('+password');
 
 //   if (!user) {
-//     return next(new ErrorResponse('User not found', 404));
+//     return res.status(404).json({ success: false, message: 'User not found' });
 //   }
 
-//   // Verify current password
 //   const isMatch = await user.comparePassword(currentPassword);
 //   if (!isMatch) {
-//     return next(new ErrorResponse('Current password is incorrect', 401));
+//     return res.status(401).json({ success: false, message: 'Current password is incorrect' });
 //   }
 
-//   // Ensure new password is different
 //   if (currentPassword === newPassword) {
-//     return next(new ErrorResponse('New password must be different from current password', 400));
+//     return res.status(400).json({ success: false, message: 'New password must be different' });
 //   }
 
-//   // Update password
-//   user.password = newPassword;  // Will be hashed by pre-save middleware
-//   user.isFirstLogin = false;    // Mark that they've changed password
+//   user.password = newPassword;
+//   user.isFirstLogin = false;
 //   user.passwordChangedAt = new Date();
 
 //   await user.save();
 
-//   // Generate new token
 //   const token = generateToken(user._id.toString());
 
-//   res.status(200).json({
+//   return res.status(200).json({
 //     success: true,
 //     message: 'Password changed successfully',
-//     token  // Send new token
+//     token
 //   });
 // });
 
@@ -145,18 +422,14 @@
 //  * =========================
 //  * 👤 Get Current User
 //  * =========================
-//  * @route   GET /api/auth/me
-//  * @access  Private (requires token)
 //  */
 // export const getMe = asyncHandler(async (
 //   req: AuthRequest,
 //   res: Response,
 //   next: NextFunction
 // ) => {
-//   // User is already attached by auth middleware
 //   const user = await User.findById(req.user._id).select('-password');
-
-//   res.status(200).json({
+//   return res.status(200).json({
 //     success: true,
 //     data: user
 //   });
@@ -166,188 +439,14 @@
 //  * =========================
 //  * 🚪 Logout Controller
 //  * =========================
-//  * @route   GET /api/auth/logout
-//  * @access  Private
 //  */
 // export const logout = asyncHandler(async (
 //   req: Request,
 //   res: Response,
 //   next: NextFunction
 // ) => {
-//   // With JWT, server just acknowledges logout
-//   // Client removes the token
-//   res.status(200).json({
+//   return res.status(200).json({
 //     success: true,
 //     message: 'Logged out successfully'
 //   });
 // });
-import { Request, Response, NextFunction } from 'express';
-import { validationResult } from 'express-validator';
-import User from '../models/User';
-import { generateToken } from '../utils/generateToken';
-import asyncHandler from '../utils/asyncHandler';
-
-// Extend Request type to include user (set by auth middleware)
-interface AuthRequest extends Request {
-  user?: any;
-}
-
-/**
- * =========================
- * 🔑 Login Controller
- * =========================
- */
-export const login = asyncHandler(async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  // Check validation errors
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({
-      success: false,
-      errors: errors.array()
-    });
-  }
-
-  const { email, password } = req.body;
-
-  // Find user by email (include password field)
-  const user = await User.findOne({ email }).select('+password');
-
-  // UPDATED: Direct response to prevent Middleware/CORS crashes
-  if (!user) {
-    return res.status(401).json({
-      success: false,
-      message: 'Invalid credentials'
-    });
-  }
-
-  // Check if account is active
-  if (!user.isActive) {
-    return res.status(401).json({
-      success: false,
-      message: 'Your account has been deactivated. Please contact administrator.'
-    });
-  }
-
-  // Verify password using our model method
-  const isPasswordMatch = await user.comparePassword(password);
-
-  if (!isPasswordMatch) {
-    return res.status(401).json({
-      success: false,
-      message: 'Invalid credentials'
-    });
-  }
-
-  // Check if this is first login
-  const isFirstLogin = user.isFirstLogin;
-
-  // Update last login
-  user.lastLogin = new Date();
-  await user.save();
-
-  // Generate token
-  const token = generateToken(user._id.toString());
-
-  return res.status(200).json({
-    success: true,
-    token,
-    isFirstLogin,
-    user: {
-      id: user._id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      phone: user.phone,
-      address: user.address,
-      isFirstLogin: user.isFirstLogin,
-      profilePicture: user.profilePicture
-    }
-  });
-});
-
-/**
- * =========================
- * 🔐 Change Password
- * =========================
- */
-export const changePassword = asyncHandler(async (
-  req: AuthRequest,
-  res: Response,
-  next: NextFunction
-) => {
-  const { currentPassword, newPassword } = req.body;
-
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({
-      success: false,
-      errors: errors.array()
-    });
-  }
-
-  const user = await User.findById(req.user._id).select('+password');
-
-  if (!user) {
-    return res.status(404).json({ success: false, message: 'User not found' });
-  }
-
-  const isMatch = await user.comparePassword(currentPassword);
-  if (!isMatch) {
-    return res.status(401).json({ success: false, message: 'Current password is incorrect' });
-  }
-
-  if (currentPassword === newPassword) {
-    return res.status(400).json({ success: false, message: 'New password must be different' });
-  }
-
-  user.password = newPassword;
-  user.isFirstLogin = false;
-  user.passwordChangedAt = new Date();
-
-  await user.save();
-
-  const token = generateToken(user._id.toString());
-
-  return res.status(200).json({
-    success: true,
-    message: 'Password changed successfully',
-    token
-  });
-});
-
-/**
- * =========================
- * 👤 Get Current User
- * =========================
- */
-export const getMe = asyncHandler(async (
-  req: AuthRequest,
-  res: Response,
-  next: NextFunction
-) => {
-  const user = await User.findById(req.user._id).select('-password');
-  return res.status(200).json({
-    success: true,
-    data: user
-  });
-});
-
-/**
- * =========================
- * 🚪 Logout Controller
- * =========================
- */
-export const logout = asyncHandler(async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  return res.status(200).json({
-    success: true,
-    message: 'Logged out successfully'
-  });
-});
