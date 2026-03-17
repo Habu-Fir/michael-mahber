@@ -87,6 +87,13 @@ connectDB();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+app.use(cors({
+  origin: true, // This automatically allows whichever origin is requesting
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 // Middleware
 app.use('/api/*', (req, res) => {
   res.status(404).json({ success: false, message: "API Route not found" });
@@ -99,20 +106,20 @@ const allowedOrigins = [
   'https://michael-mahber.vercel.app', // Your actual Vercel URL
 ];
 
-app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps)
-    if (!origin) return callback(null, true);
+// app.use(cors({
+//   origin: function (origin, callback) {
+//     // Allow requests with no origin (like mobile apps)
+//     if (!origin) return callback(null, true);
 
-    // Check if origin is allowed or is a Vercel preview branch
-    if (allowedOrigins.indexOf(origin) !== -1 || origin.endsWith('.vercel.app')) {
-      return callback(null, true);
-    } else {
-      return callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true
-}));
+//     // Check if origin is allowed or is a Vercel preview branch
+//     if (allowedOrigins.indexOf(origin) !== -1 || origin.endsWith('.vercel.app')) {
+//       return callback(null, true);
+//     } else {
+//       return callback(new Error('Not allowed by CORS'));
+//     }
+//   },
+//   credentials: true
+// }));
 
 // API Routes (MUST come before static files)
 app.use('/api/auth', authRoutes);
@@ -121,14 +128,20 @@ app.use('/api/loans', loanRoutes);
 app.use('/api/contributions', contributionRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 
-// IMPORTANT: Serve static files from the client build folder (for production)
-if (process.env.NODE_ENV === 'production') {
-  // Serve static files from the client build folder
-  app.use(express.static(path.join(__dirname, '../../client/dist')));
+// // IMPORTANT: Serve static files from the client build folder (for production)
+// if (process.env.NODE_ENV === 'production') {
+//   // Serve static files from the client build folder
+//   app.use(express.static(path.join(__dirname, '../../client/dist')));
 
-  // For any route not matching API, serve the React app
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../../client/dist/index.html'));
+//   // For any route not matching API, serve the React app
+//   app.get('*', (req, res) => {
+//     res.sendFile(path.join(__dirname, '../../client/dist/index.html'));
+//   });
+// }
+// Replace that if (process.env.NODE_ENV === 'production') block with this:
+if (process.env.NODE_ENV === 'production') {
+  app.get('/', (req, res) => {
+    res.json({ message: "API is active and healthy" });
   });
 }
 
