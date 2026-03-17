@@ -152,7 +152,14 @@ UserSchema.virtual('fullName').get(function () {
     return this.name;
 });
 
+// /**
+//  * =========================
+//  * 🚀 Export Model
+//  * =========================
+//  */
+// const User = mongoose.model<IUser, UserModel>('User', UserSchema);
 
+// export default User;
 
 /**
  * =========================
@@ -162,6 +169,11 @@ UserSchema.virtual('fullName').get(function () {
 // CRITICAL FIX: 
 // 1. We check if the model already exists to prevent re-compilation errors.
 // 2. We add 'user' as the 3rd argument to match your MongoDB Atlas collection name.
-const User = mongoose.models.User || mongoose.model<IUser, UserModel>('User', UserSchema, 'user');
+// const User = mongoose.models.User || mongoose.model<IUser, UserModel>('User', UserSchema, 'user');
+
+// export default User;
+
+// Change 'user' to 'users'
+const User = mongoose.models.User || mongoose.model<IUser, UserModel>('User', UserSchema, 'users');
 
 export default User;
