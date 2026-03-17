@@ -3,6 +3,5 @@
     "outputDirectory": "client/dist",
     "devCommand": "cd client && npm run dev",
     "installCommand": "cd client && npm ci",
-    "framework": "vite",
-    "nodeVersion": "18.x"
+    "framework": "vite"
 }
