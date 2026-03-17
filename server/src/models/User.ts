@@ -152,11 +152,16 @@ UserSchema.virtual('fullName').get(function () {
     return this.name;
 });
 
+
+
 /**
  * =========================
  * 🚀 Export Model
  * =========================
  */
-const User = mongoose.model<IUser, UserModel>('User', UserSchema);
+// CRITICAL FIX: 
+// 1. We check if the model already exists to prevent re-compilation errors.
+// 2. We add 'user' as the 3rd argument to match your MongoDB Atlas collection name.
+const User = mongoose.models.User || mongoose.model<IUser, UserModel>('User', UserSchema, 'user');
 
 export default User;
